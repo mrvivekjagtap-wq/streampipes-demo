@@ -1,14 +1,9 @@
-# Atosu white-label overlay. Compose auto-merges this with docker-compose.yml.
-# Bind-mounts branding assets over the stock StreamPipes files inside the ui
-# container (nginx serves them as static files) — no image rebuild needed.
-# Survives restarts; re-applied automatically by `docker compose up -d`.
-#
-#   logo.png            -> login-page logo (black, sits on white card)
-#   logo-navigation.png -> top-bar logo (white knockout, sits on the coloured bar)
-#   favicon-96x96.png   -> browser-tab icon + startup splash mark
+# Atosu white-label: build a branded UI image instead of the stock one.
+# Bakes in logos, favicon, the <title> and the Atosu theme (navy/maroon/teal).
+# Apply:  docker compose up -d --build ui
 services:
   ui:
-    volumes:
-      - ./branding/logo.png:/usr/share/nginx/html/assets/img/sp/logo.png:ro
-      - ./branding/logo-navigation.png:/usr/share/nginx/html/assets/img/sp/logo-navigation.png:ro
-      - ./branding/favicon-96x96.png:/usr/share/nginx/html/assets/img/favicon/favicon-96x96.png:ro
+    build:
+      context: .
+      dockerfile: branding/Dockerfile.ui
+    image: atosu/streampipes-ui:0.98.0

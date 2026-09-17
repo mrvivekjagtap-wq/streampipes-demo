@@ -1,0 +1,13 @@
+# Atosu-branded StreamPipes UI. Thin layer over the official image:
+# swaps logos + favicon, rewrites the <title>, and injects the Atosu theme CSS.
+# No npm build — just static-asset overwrites, so it builds in seconds.
+FROM apachestreampipes/ui:0.98.0
+USER root
+COPY branding/logo.png            /usr/share/nginx/html/assets/img/sp/logo.png
+COPY branding/logo-navigation.png /usr/share/nginx/html/assets/img/sp/logo-navigation.png
+COPY branding/favicon-96x96.png   /usr/share/nginx/html/assets/img/favicon/favicon-96x96.png
+COPY branding/atosu-brand.css     /usr/share/nginx/html/assets/atosu-brand.css
+RUN sed -i 's#<title>[^<]*</title>#<title>Atosu Engineering \xE2\x80\x94 AHCM</title>#' /usr/share/nginx/html/index.html \
+ && sed -i 's#</head>#<link rel="stylesheet" href="assets/atosu-brand.css"></head>#' /usr/share/nginx/html/index.html \
+ && chown -R nginx:nginx /usr/share/nginx/html
+USER nginx

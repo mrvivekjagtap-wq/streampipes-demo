@@ -1,0 +1,24 @@
+/* Atosu Engineering white-label theme for StreamPipes 0.98.0
+ * Overrides the documented theming seam (ui/deployment/theme/_custom-variables.scss).
+ * Loaded AFTER the app styles, so these :root custom-property values win.
+ * Palette sampled from the Atosu AHCM deck:
+ *   navy  #03184A   maroon #9C2815   teal #3EC6CC / #0B7F84   slate #3C4C66
+ */
+:root {
+  --color-primary:            #03184A;  /* deep navy */
+  --color-primary-dark:       #3EC6CC;  /* teal (dark-mode primary) */
+  --color-primary-alt:        #3C4C66;  /* slate */
+  --color-secondary:          #03184A;  /* was StreamPipes green -> navy */
+  --color-secondary-dark:     #0B7F84;  /* deep teal */
+
+  --color-loading-bar:        #3EC6CC;  /* teal, pops on navy */
+
+  --color-navigation-bg:      #03184A;  /* left rail + top bar: navy */
+  --color-navigation-selected:#9C2815;  /* maroon selection (matches logo) */
+  --color-navigation-hover:   #0B7F84;  /* teal hover */
+  --color-navigation-divider: #3EC6CC;  /* teal divider */
+}
+.dark-mode {
+  --color-primary:   #3EC6CC;
+  --color-secondary: #0B7F84;
+}
