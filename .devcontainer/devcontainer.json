@@ -13,8 +13,10 @@
     "storage": "32gb"
   },
   "onCreateCommand": "docker compose pull",
-  "postStartCommand": "docker compose up -d",
-  "forwardPorts": [80],
+  "postStartCommand": "docker compose up -d && nohup bash -lc 'BASE=http://localhost:80 ./install-extensions.sh' > /tmp/sp-install.log 2>&1 &",
+  "forwardPorts": [
+    80
+  ],
   "portsAttributes": {
     "80": {
       "label": "StreamPipes UI",
@@ -23,7 +25,9 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-azuretools.vscode-docker"]
+      "extensions": [
+        "ms-azuretools.vscode-docker"
+      ]
     }
   }
 }

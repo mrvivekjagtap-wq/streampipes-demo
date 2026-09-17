@@ -101,3 +101,24 @@ sinks — a pipeline that only has a Dashboard Sink stores nothing.
 The quick-start `curl` on the Apache download page points at raw GitHub ref `0.98.0`,
 but the actual tag is `release/0.98.0` — the published one-liner 404s. The files in
 this folder were fetched from the correct ref.
+
+## 6. First-boot gotcha — empty adapter list (already handled)
+
+**Symptom:** Connect → New adapter shows a blank "Select Adapter" list.
+
+**Cause:** A fresh StreamPipes install registers its ~121 bundled elements
+(32 adapters, 59 processors, 30 sinks) as *available* but not *installed*.
+The first-run Setup wizard normally installs them, but this compose
+auto-provisions the default admin and skips that step — so the list is empty
+until they're installed once. The extensions container is healthy; nothing is
+broken. Installed state is stored in CouchDB and persists across restarts.
+
+**Fix (automatic):** `.devcontainer` runs `install-extensions.sh` on every
+Codespace start. On the very first boot, give it ~2–3 min after the UI loads,
+then reload — the adapters appear. Progress log: `cat /tmp/sp-install.log`.
+
+**Fix (manual), e.g. after `docker compose down -v`:**
+```bash
+BASE=http://localhost:80 ./install-extensions.sh
+```
+The script is idempotent — it skips anything already installed.
