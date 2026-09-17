@@ -122,3 +122,36 @@ then reload — the adapters appear. Progress log: `cat /tmp/sp-install.log`.
 BASE=http://localhost:80 ./install-extensions.sh
 ```
 The script is idempotent — it skips anything already installed.
+
+## 7. White-labelling (Atosu branding)
+
+Branding assets live in `branding/` and are bind-mounted over the stock
+StreamPipes files via `docker-compose.override.yml` (Compose merges it
+automatically). **No image rebuild** — nginx just serves the replacement files.
+
+| File | Replaces | Where it shows |
+|------|----------|----------------|
+| `branding/logo.png` | login logo | login screen (black logo on white card) |
+| `branding/logo-navigation.png` | top-bar logo | every page's top bar (white knockout on the coloured bar) |
+| `branding/favicon-96x96.png` | favicon | browser tab + startup splash |
+
+Apply (or re-apply after editing a file):
+```bash
+docker compose up -d ui      # recreates ui with the mounts; hard-refresh the browser (Cmd/Ctrl+Shift+R)
+```
+To use a different logo, drop a new PNG in `branding/` with the same filename.
+`logo-navigation.png` should be a **white** version (the bar is coloured).
+
+### Not done by the file swap (needs more)
+- **"Apache StreamPipes" tab title / app-name text** — stored via the setup
+  flow, which this quick-start bypassed (`/setup/configured` is unset), so the
+  app-name config can't be PUT yet. Set it once the setup doc exists, or bake it
+  in the rebuild below.
+- **Theme colours** (the green bar → Atosu navy/maroon) — compiled into the UI
+  image from `ui/deployment/theme/_custom-variables.scss`. Needs a UI rebuild.
+
+### Full white-label (optional, one-time rebuild)
+Build a custom `atosu/streampipes-ui` image that bakes in the logos, the
+`<title>`, and Atosu colours — then the override file isn't needed and the image
+is shareable. Ask and this can be scripted as a small Dockerfile `FROM
+apachestreampipes/ui:0.98.0`.
