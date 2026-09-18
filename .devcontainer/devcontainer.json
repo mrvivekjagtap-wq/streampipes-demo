@@ -12,7 +12,7 @@
     "memory": "8gb",
     "storage": "32gb"
   },
-  "onCreateCommand": "docker compose pull",
+  "onCreateCommand": "docker compose pull --ignore-pull-failures",
   "postStartCommand": "docker compose up -d && nohup bash -lc 'BASE=http://localhost:80 ./install-extensions.sh' > /tmp/sp-install.log 2>&1 &",
   "forwardPorts": [
     80
