@@ -1,9 +1,37 @@
-# Atosu white-label: build a branded UI image instead of the stock one.
-# Bakes in logos, favicon, the <title> and the Atosu theme (navy/maroon/teal).
-# Apply:  docker compose up -d --build ui
+# Atosu overrides:
+#  - ui: build the branded UI image instead of the stock one
+#  - mosquitto: MQTT broker for virtual/lab devices
+#  - tldd-simulator: TLDD-01 virtual device streaming multi-signal telemetry
+# Apply: docker compose up -d --build
 services:
   ui:
     build:
       context: .
       dockerfile: branding/Dockerfile.ui
     image: atosu/streampipes-ui:0.98.0
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./demo/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "1883:1883"          # host-exposed so real lab devices can point here too
+    restart: unless-stopped
+    networks:
+      spnet:
+
+  tldd-simulator:
+    image: python:3.11-slim
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./demo/tldd-simulator.py:/app/sim.py:ro
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=atosu/tldd/telemetry
+      - DEVICE_ID=TLDD-01
+    command: sh -c "pip install --quiet --no-cache-dir paho-mqtt && python -u /app/sim.py"
+    restart: unless-stopped
+    networks:
+      spnet:
