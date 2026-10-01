@@ -35,3 +35,17 @@ services:
     restart: unless-stopped
     networks:
       spnet:
+
+  tldd-fleet:
+    image: python:3.11-slim
+    depends_on:
+      - mosquitto
+    volumes:
+      - ./demo/tldd-fleet.py:/app/fleet.py:ro
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+    command: sh -c "pip install --quiet --no-cache-dir paho-mqtt && python -u /app/fleet.py"
+    restart: unless-stopped
+    networks:
+      spnet:
