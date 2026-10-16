@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Atosu Engineering — Configurator</title>
+<style>
+  :root{--navy:#03184A;--maroon:#9C2815;--teal:#0B7F84;--ink:#0f172a;--bg:#f8fafc;--line:#e2e8f0}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+  button{font:inherit;cursor:pointer}
+
+  /* Access gate */
+  #gate{position:fixed;inset:0;background:linear-gradient(135deg,#03184A 0%,#0B7F84 100%);display:grid;place-items:center;z-index:9999;color:#fff}
+  #gate .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:40px 48px;border-radius:16px;text-align:center;border:1px solid rgba(255,255,255,.15);max-width:380px}
+  #gate h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:.3px}
+  #gate .sub{opacity:.75;font-size:13px;margin-bottom:24px}
+  #gate input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none}
+  #gate input::placeholder{color:rgba(255,255,255,.5)}
+  #gate input:focus{border-color:#3EC6CC;background:rgba(255,255,255,.15)}
+  #gate button{margin-top:14px;width:100%;padding:12px;background:#9C2815;color:#fff;border:0;border-radius:8px;font-weight:600;letter-spacing:.3px}
+  #gate button:hover{background:#b63018}
+  #gate .err{margin-top:12px;color:#ffb4a8;font-size:12px;min-height:16px}
+  #gate .hint{margin-top:18px;opacity:.5;font-size:11px}
+
+  /* Top bar */
+  .topbar{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 18px;gap:14px;box-shadow:0 1px 0 rgba(0,0,0,.08);position:relative;z-index:50}
+  .topbar .brand{font-weight:700;letter-spacing:.4px;font-size:15px}
+  .topbar .brand span{color:#3EC6CC}
+  .topbar .sep{flex:1}
+  .topbar button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:7px;font-size:13px;display:inline-flex;align-items:center;gap:7px}
+  .topbar button:hover{background:rgba(255,255,255,.08)}
+  .topbar button.primary{background:#9C2815;border-color:#9C2815}
+  .topbar button.primary:hover{background:#b63018}
+  .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:rgba(62,198,204,.18);color:#3EC6CC;border:1px solid rgba(62,198,204,.3)}
+
+  /* Body = iframe of the config builder */
+  .main{height:calc(100vh - 52px);width:100%;display:flex}
+  iframe{flex:1;border:0;height:100%;width:100%;background:#fff}
+
+  /* Live devices slide-over */
+  #live{position:fixed;top:52px;right:0;bottom:0;width:440px;background:#fff;box-shadow:-6px 0 24px rgba(2,10,30,.18);transform:translateX(100%);transition:transform .25s ease;z-index:200;display:flex;flex-direction:column}
+  #live.open{transform:translateX(0)}
+  #live header{padding:14px 18px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px}
+  #live header b{flex:1;font-size:14px;letter-spacing:.3px}
+  #live header button{background:transparent;color:#fff;border:0;font-size:22px;line-height:1;padding:0 6px}
+  #live .body{flex:1;overflow:auto;padding:14px 16px}
+  #live .toolbar{padding:10px 16px;border-bottom:1px solid var(--line);background:#f8fafc;display:flex;gap:8px}
+  #live .toolbar button{flex:1;padding:9px;background:var(--navy);color:#fff;border:0;border-radius:7px;font-weight:600;font-size:12.5px;letter-spacing:.2px}
+  #live .toolbar button.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+  .dev{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:.15s;background:#fff}
+  .dev:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(2,10,30,.08)}
+  .dev .row{display:flex;align-items:center;gap:10px}
+  .dev .name{font-weight:600;flex:1}
+  .dev .meta{font-size:11.5px;color:#64748b;margin-top:5px}
+  .badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;letter-spacing:.3px}
+  .badge.on{background:#dcfce7;color:#15803d}
+  .badge.off{background:#fee2e2;color:#991b1b}
+
+  /* Add device form */
+  #form{display:none;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+  #form.open{display:block}
+  #form label{display:block;font-size:11.5px;font-weight:600;color:#475569;margin:8px 0 4px}
+  #form input,#form select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:13px;outline:none}
+  #form input:focus,#form select:focus{border-color:var(--teal)}
+  #form .btns{display:flex;gap:8px;margin-top:12px}
+  #form button{flex:1;padding:8px;border:0;border-radius:7px;font-weight:600;font-size:12.5px}
+  #form .save{background:var(--maroon);color:#fff}
+  #form .cancel{background:#fff;color:#475569;border:1px solid var(--line)}
+  #formMsg{font-size:11.5px;color:#15803d;margin-top:8px;min-height:14px}
+  #formMsg.err{color:#991b1b}
+
+  /* Live telemetry modal */
+  #tele{position:fixed;inset:0;background:rgba(2,10,30,.55);display:none;align-items:center;justify-content:center;z-index:300}
+  #tele.open{display:flex}
+  #tele .box{background:#fff;border-radius:14px;max-width:720px;width:92%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  #tele header{padding:14px 20px;background:var(--navy);color:#fff;border-radius:14px 14px 0 0;display:flex;align-items:center;gap:10px}
+  #tele header b{flex:1}
+  #tele header .rl{font-size:11px;color:#3EC6CC;letter-spacing:.3px}
+  #tele header button{background:transparent;color:#fff;border:0;font-size:22px;line-height:1}
+  #tele .body{flex:1;overflow:auto;padding:14px 18px}
+  #tele table{width:100%;border-collapse:collapse;font-size:12.5px}
+  #tele th{text-align:left;padding:9px 10px;background:#f1f5f9;color:#334155;font-weight:600;position:sticky;top:0;border-bottom:2px solid var(--line)}
+  #tele td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  #tele td.ts{color:#64748b;white-space:nowrap}
+  #tele .fault td{background:#fef2f2}
+  #tele .foot{padding:10px 18px;background:#f8fafc;border-top:1px solid var(--line);display:flex;align-items:center;font-size:11.5px;color:#64748b;border-radius:0 0 14px 14px}
+  #tele .foot .dot{width:7px;height:7px;background:#15803d;border-radius:50%;margin-right:7px;animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<!-- ================= Access gate ================= -->
+<div id="gate">
+  <div class="card">
+    <h1>Atosu Engineering</h1>
+    <div class="sub">Configurator preview — access code required</div>
+    <input id="code" type="password" placeholder="Access code" autofocus/>
+    <button onclick="checkCode()">Enter</button>
+    <div class="err" id="gateErr"></div>
+    <div class="hint">Internal preview · Atosu + Trinergy</div>
+  </div>
+</div>
+
+<!-- ================= Top bar ================= -->
+<div class="topbar">
+  <div class="brand">Atosu <span>Configurator</span></div>
+  <span class="pill" id="connPill">● connecting</span>
+  <div class="sep"></div>
+  <button onclick="toggleLive()">📡 Live Devices</button>
+  <button class="primary" onclick="openBuilder()">⚙︎ Open Builder</button>
+</div>
+
+<!-- ================= Config builder in iframe ================= -->
+<div class="main">
+  <iframe id="bldr" src="builder.html" title="Atosu Builder"></iframe>
+</div>
+
+<!-- ================= Live devices panel ================= -->
+<aside id="live">
+  <header>
+    <b>Live Devices · StreamPipes</b>
+    <button onclick="toggleLive()">×</button>
+  </header>
+  <div class="toolbar">
+    <button onclick="showForm()">+ Add Device</button>
+    <button class="ghost" onclick="loadDevices()">↻ Refresh</button>
+  </div>
+  <div class="body">
+    <div id="form">
+      <label>Device name</label>
+      <input id="fName" placeholder="e.g. PMP-07 Centrifugal Pump"/>
+      <label>MQTT topic</label>
+      <input id="fTopic" placeholder="e.g. atosu/pmp-07/telemetry"/>
+      <label>Device type</label>
+      <select id="fType">
+        <option value="motor">Motor</option>
+        <option value="pump">Pump</option>
+        <option value="sensor">Generic sensor</option>
+      </select>
+      <div class="btns">
+        <button class="cancel" onclick="hideForm()">Cancel</button>
+        <button class="save" onclick="createDevice()">Create</button>
+      </div>
+      <div id="formMsg"></div>
+    </div>
+    <div id="devList">Loading devices…</div>
+  </div>
+</aside>
+
+<!-- ================= Live telemetry modal ================= -->
+<div id="tele">
+  <div class="box">
+    <header>
+      <b id="teleTitle">—</b>
+      <span class="rl">LIVE · auto-refresh 2s</span>
+      <button onclick="closeTele()">×</button>
+    </header>
+    <div class="body">
+      <table>
+        <thead><tr id="teleHead"></tr></thead>
+        <tbody id="teleBody"></tbody>
+      </table>
+    </div>
+    <div class="foot"><span class="dot"></span><span id="teleFoot">Streaming from Atosu StreamPipes data lake</span></div>
+  </div>
+</div>
+
+<script>
+/* ================= Config ================= */
+const ACCESS_CODE = 'atosu';
+const SP = '/sp/streampipes-backend/api';
+const CREDS = {username:'admin@atosu.com', password:'Atosu-VCAg5tYtyI'};
+let TOKEN = sessionStorage.getItem('sp-token') || '';
+let telePoll = null;
+
+/* ================= Access gate ================= */
+function checkCode(){
+  const v = (document.getElementById('code').value||'').trim().toLowerCase();
+  if (v !== ACCESS_CODE){ document.getElementById('gateErr').textContent='Invalid code.'; return; }
+  sessionStorage.setItem('atosu-access','1');
+  document.getElementById('gate').style.display='none';
+  init();
+}
+document.getElementById('code').addEventListener('keydown', e=>{ if(e.key==='Enter') checkCode(); });
+if (sessionStorage.getItem('atosu-access')==='1'){ document.getElementById('gate').style.display='none'; setTimeout(init,10); }
+
+/* ================= StreamPipes login ================= */
+async function login(){
+  try{
+    const r = await fetch(SP+'/v2/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(CREDS)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    TOKEN = j.accessToken;
+    sessionStorage.setItem('sp-token', TOKEN);
+    pill('● connected','#3EC6CC');
+    return true;
+  }catch(e){ pill('● offline','#f87171'); return false; }
+}
+function pill(txt,color){ const p=document.getElementById('connPill'); p.textContent=txt; p.style.color=color; p.style.borderColor=color; p.style.background='transparent'; }
+async function spGet(path){
+  const r = await fetch(SP+path, {headers:{Authorization:'Bearer '+TOKEN}});
+  if (r.status===401){ await login(); return spGet(path); }
+  return r.json();
+}
+async function spPost(path, body){
+  const r = await fetch(SP+path, {method:'POST',headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if (r.status===401){ await login(); return spPost(path,body); }
+  return {status:r.status, body: await r.text()};
+}
+
+/* ================= Devices list ================= */
+async function loadDevices(){
+  const list = document.getElementById('devList');
+  list.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Loading…</div>';
+  try{
+    const adapters = await spGet('/v2/connect/master/adapters');
+    if (!Array.isArray(adapters) || adapters.length===0){
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;font-size:13px">No devices yet.<br/>Click <b>+ Add Device</b> to create one.</div>';
+      return;
+    }
+    list.innerHTML = adapters.map(a => {
+      const name = a.name || 'Unnamed';
+      const running = a.running === true || a.selectedEndpointUrl != null;
+      const type = (a.name||'').toLowerCase().includes('pump') ? '💧 Pump' : '⚙︎ Motor/Device';
+      const measure = a.dataLakeMeasureName || a.correspondingDataStreamElementId || '';
+      return `<div class="dev" onclick="openTele('${(a.elementId||'').replace(/'/g,"\\'")}','${name.replace(/'/g,"\\'")}')">
+        <div class="row">
+          <div class="name">${name}</div>
+          <span class="badge ${running?'on':'off'}">${running?'RUNNING':'STOPPED'}</span>
+        </div>
+        <div class="meta">${type} · ${a.adapterType||'MQTT'} ${measure?'· '+measure:''}</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    list.innerHTML = `<div style="padding:20px;text-align:center;color:#991b1b;font-size:12px">Could not load: ${e.message}</div>`;
+  }
+}
+
+/* ================= Add device ================= */
+function showForm(){ document.getElementById('form').classList.add('open'); document.getElementById('formMsg').textContent=''; }
+function hideForm(){ document.getElementById('form').classList.remove('open'); ['fName','fTopic'].forEach(id=>document.getElementById(id).value=''); }
+
+async function createDevice(){
+  const name = (document.getElementById('fName').value||'').trim();
+  const topic = (document.getElementById('fTopic').value||'').trim();
+  const type = document.getElementById('fType').value;
+  const msg = document.getElementById('formMsg'); msg.className=''; msg.textContent='';
+  if (!name || !topic){ msg.className='err'; msg.textContent='Name and topic required.'; return; }
+  msg.textContent = 'Creating adapter on StreamPipes…';
+
+  // Fetch an existing adapter as template, mutate it. (Keeps us tolerant of version changes.)
+  try{
+    const existing = await spGet('/v2/connect/master/adapters');
+    const tmpl = existing && existing[0];
+    if (!tmpl){ msg.className='err'; msg.textContent='Needs at least one adapter in StreamPipes as template. Create one via Connect first.'; return; }
+    // Deep-clone + strip identity + update name/topic
+    const dup = JSON.parse(JSON.stringify(tmpl));
+    delete dup.elementId; delete dup.rev; delete dup._rev; delete dup._id;
+    dup.name = name;
+    dup.description = `${type} device · created via Atosu Configurator`;
+    // Patch topic in the config (MQTT adapter stores it in config.values[?].value)
+    const cfgStr = JSON.stringify(dup);
+    const patched = cfgStr.replace(/"atosu\/[^"]+"/g, `"${topic}"`);
+    const body = JSON.parse(patched);
+    const res = await spPost('/v2/connect/master/adapter', body);
+    if (res.status>=200 && res.status<300){
+      msg.textContent = '✓ Device created in StreamPipes';
+      setTimeout(()=>{ hideForm(); loadDevices(); }, 900);
+    } else {
+      msg.className='err'; msg.textContent = `Server said HTTP ${res.status}. Try creating via StreamPipes Connect UI for complex adapters.`;
+    }
+  }catch(e){ msg.className='err'; msg.textContent='Error: '+e.message; }
+}
+
+/* ================= Live telemetry ================= */
+async function openTele(adapterId, name){
+  document.getElementById('teleTitle').textContent = name;
+  document.getElementById('teleHead').innerHTML = '<th>Timestamp</th><th>Loading…</th>';
+  document.getElementById('teleBody').innerHTML = '';
+  document.getElementById('tele').classList.add('open');
+  // Find the measurement name for this adapter
+  const adapters = await spGet('/v2/connect/master/adapters');
+  const a = adapters.find(x => x.elementId === adapterId);
+  const measure = a?.dataLakeMeasureName || a?.name;
+  if (!measure){ document.getElementById('teleFoot').textContent='No data lake measurement for this device.'; return; }
+  pollTele(measure);
+  telePoll = setInterval(()=>pollTele(measure), 2000);
+}
+function closeTele(){ document.getElementById('tele').classList.remove('open'); if(telePoll){clearInterval(telePoll); telePoll=null;} }
+
+async function pollTele(measure){
+  try{
+    // Measurement name may contain spaces — encode
+    const path = `/v4/datalake/measurements/${encodeURIComponent(measure)}?orderBy=time&maxResults=20&order=DESC`;
+    const data = await spGet(path);
+    const rows = (data?.allDataSeries?.[0]?.rows) || data?.rows || [];
+    const hdrs = (data?.allDataSeries?.[0]?.headers) || data?.headers || [];
+    if (!rows.length){ document.getElementById('teleBody').innerHTML='<tr><td colspan="99" style="text-align:center;color:#94a3b8">waiting for data…</td></tr>'; return; }
+    document.getElementById('teleHead').innerHTML = hdrs.map((h,i)=>`<th>${i===0?'Time':h}</th>`).join('');
+    document.getElementById('teleBody').innerHTML = rows.map(r=>{
+      const faulty = r.some(v=>String(v).toUpperCase().includes('FAULT')||String(v).toUpperCase().includes('CAVIT'));
+      return `<tr class="${faulty?'fault':''}">`+r.map((v,i)=>{
+        if (i===0){ try{ return `<td class="ts">${new Date(v).toLocaleTimeString()}</td>`; }catch(_){return `<td class="ts">${v}</td>`;} }
+        return `<td>${typeof v==='number'? v.toFixed(2) : v}</td>`;
+      }).join('')+'</tr>';
+    }).join('');
+    document.getElementById('teleFoot').textContent = `${rows.length} rows · measurement: ${measure}`;
+  }catch(e){ document.getElementById('teleFoot').textContent='Error: '+e.message; }
+}
+
+/* ================= UI helpers ================= */
+function toggleLive(){ document.getElementById('live').classList.toggle('open'); if(document.getElementById('live').classList.contains('open')) loadDevices(); }
+function openBuilder(){ document.getElementById('bldr').contentWindow.focus(); }
+
+async function init(){
+  pill('● connecting','#fbbf24');
+  const ok = await login();
+  if (ok) loadDevices();
+}
+</script>
+</body>
+</html>

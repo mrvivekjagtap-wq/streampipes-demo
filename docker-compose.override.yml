@@ -49,3 +49,17 @@ services:
     restart: unless-stopped
     networks:
       spnet:
+
+  atosu-configurator:
+    image: nginx:alpine
+    depends_on:
+      - ui
+    ports:
+      - "8081:80"
+    volumes:
+      - ./demo/configurator/index.html:/usr/share/nginx/html/index.html:ro
+      - ./demo/configurator/builder.html:/usr/share/nginx/html/builder.html:ro
+      - ./demo/configurator/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+    networks:
+      spnet:
