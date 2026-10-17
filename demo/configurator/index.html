@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Atosu Engineering — Configurator</title>
 <style>
-  :root{--navy:#03184A;--maroon:#9C2815;--teal:#0B7F84;--ink:#0f172a;--bg:#f8fafc;--line:#e2e8f0}
+  :root{--navy:#03184A;--maroon:#9C2815;--teal:#0B7F84;--cyan:#3EC6CC;--ink:#0f172a;--bg:#f8fafc;--line:#e2e8f0;--muted:#64748b}
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
   button{font:inherit;cursor:pointer}
@@ -13,47 +13,57 @@
   /* Access gate */
   #gate{position:fixed;inset:0;background:linear-gradient(135deg,#03184A 0%,#0B7F84 100%);display:grid;place-items:center;z-index:9999;color:#fff}
   #gate .card{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:40px 48px;border-radius:16px;text-align:center;border:1px solid rgba(255,255,255,.15);max-width:380px}
-  #gate h1{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:.3px}
+  #gate h1{margin:0 0 6px;font-size:22px;font-weight:700}
   #gate .sub{opacity:.75;font-size:13px;margin-bottom:24px}
   #gate input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none}
   #gate input::placeholder{color:rgba(255,255,255,.5)}
-  #gate input:focus{border-color:#3EC6CC;background:rgba(255,255,255,.15)}
-  #gate button{margin-top:14px;width:100%;padding:12px;background:#9C2815;color:#fff;border:0;border-radius:8px;font-weight:600;letter-spacing:.3px}
+  #gate input:focus{border-color:var(--cyan);background:rgba(255,255,255,.15)}
+  #gate button{margin-top:14px;width:100%;padding:12px;background:var(--maroon);color:#fff;border:0;border-radius:8px;font-weight:600}
   #gate button:hover{background:#b63018}
   #gate .err{margin-top:12px;color:#ffb4a8;font-size:12px;min-height:16px}
   #gate .hint{margin-top:18px;opacity:.5;font-size:11px}
 
   /* Top bar */
-  .topbar{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 18px;gap:14px;box-shadow:0 1px 0 rgba(0,0,0,.08);position:relative;z-index:50}
-  .topbar .brand{font-weight:700;letter-spacing:.4px;font-size:15px}
-  .topbar .brand span{color:#3EC6CC}
+  .topbar{height:52px;background:var(--navy);color:#fff;display:flex;align-items:center;padding:0 18px;gap:14px;position:relative;z-index:50}
+  .topbar .brand{font-weight:700;font-size:15px;letter-spacing:.4px}
+  .topbar .brand span{color:var(--cyan)}
   .topbar .sep{flex:1}
-  .topbar button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:7px;font-size:13px;display:inline-flex;align-items:center;gap:7px}
+  .topbar button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:7px 14px;border-radius:7px;font-size:13px}
   .topbar button:hover{background:rgba(255,255,255,.08)}
-  .topbar button.primary{background:#9C2815;border-color:#9C2815}
+  .topbar button.primary{background:var(--maroon);border-color:var(--maroon)}
   .topbar button.primary:hover{background:#b63018}
-  .pill{font-size:11px;padding:3px 9px;border-radius:999px;background:rgba(62,198,204,.18);color:#3EC6CC;border:1px solid rgba(62,198,204,.3)}
+  .pill{font-size:11px;padding:3px 9px;border-radius:999px;color:var(--cyan);border:1px solid rgba(62,198,204,.3)}
 
-  /* Body = iframe of the config builder */
+  /* Main */
   .main{height:calc(100vh - 52px);width:100%;display:flex}
   iframe{flex:1;border:0;height:100%;width:100%;background:#fff}
 
-  /* Live devices slide-over */
-  #live{position:fixed;top:52px;right:0;bottom:0;width:440px;background:#fff;box-shadow:-6px 0 24px rgba(2,10,30,.18);transform:translateX(100%);transition:transform .25s ease;z-index:200;display:flex;flex-direction:column}
+  /* Slide-over (collapsed) */
+  #live{position:fixed;top:52px;right:0;bottom:0;width:440px;background:#fff;box-shadow:-6px 0 24px rgba(2,10,30,.18);transform:translateX(100%);transition:transform .25s,width .25s;z-index:200;display:flex;flex-direction:column}
   #live.open{transform:translateX(0)}
-  #live header{padding:14px 18px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:10px}
+  #live.full{width:calc(100vw);top:52px}
+  #live header{padding:14px 18px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:8px}
   #live header b{flex:1;font-size:14px;letter-spacing:.3px}
-  #live header button{background:transparent;color:#fff;border:0;font-size:22px;line-height:1;padding:0 6px}
-  #live .body{flex:1;overflow:auto;padding:14px 16px}
+  #live header button{background:transparent;color:#fff;border:0;font-size:20px;line-height:1;padding:0 6px}
   #live .toolbar{padding:10px 16px;border-bottom:1px solid var(--line);background:#f8fafc;display:flex;gap:8px}
-  #live .toolbar button{flex:1;padding:9px;background:var(--navy);color:#fff;border:0;border-radius:7px;font-weight:600;font-size:12.5px;letter-spacing:.2px}
+  #live .toolbar button{flex:1;padding:9px;background:var(--navy);color:#fff;border:0;border-radius:7px;font-weight:600;font-size:12.5px}
   #live .toolbar button.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+
+  /* Full-screen layout: list left, details right */
+  #live .layout{flex:1;overflow:auto;display:flex;flex-direction:column}
+  #live.full .layout{flex-direction:row;overflow:hidden}
+  #live.full .leftCol{width:360px;border-right:1px solid var(--line);overflow:auto;background:#fafbfd;flex:0 0 360px}
+  #live.full .rightCol{flex:1;overflow:auto;padding:18px 22px;background:#fff;display:block}
+  #live:not(.full) .rightCol{display:none}
+  .leftCol{padding:12px 14px}
+
   .dev{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:.15s;background:#fff}
   .dev:hover{border-color:var(--navy);box-shadow:0 2px 8px rgba(2,10,30,.08)}
+  .dev.sel{border-color:var(--navy);box-shadow:0 0 0 2px rgba(3,24,74,.08)}
   .dev .row{display:flex;align-items:center;gap:10px}
   .dev .name{font-weight:600;flex:1}
-  .dev .meta{font-size:11.5px;color:#64748b;margin-top:5px}
-  .badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;letter-spacing:.3px}
+  .dev .meta{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .badge{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600}
   .badge.on{background:#dcfce7;color:#15803d}
   .badge.off{background:#fee2e2;color:#991b1b}
 
@@ -69,29 +79,43 @@
   #form .cancel{background:#fff;color:#475569;border:1px solid var(--line)}
   #formMsg{font-size:11.5px;color:#15803d;margin-top:8px;min-height:14px}
   #formMsg.err{color:#991b1b}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .chip{font-size:11px;padding:5px 10px;background:#fff;border:1px solid var(--line);border-radius:999px;cursor:pointer;color:#334155}
+  .chip:hover{border-color:var(--teal);color:var(--teal)}
+  .help{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
 
-  /* Live telemetry modal */
-  #tele{position:fixed;inset:0;background:rgba(2,10,30,.55);display:none;align-items:center;justify-content:center;z-index:300}
-  #tele.open{display:flex}
-  #tele .box{background:#fff;border-radius:14px;max-width:720px;width:92%;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-  #tele header{padding:14px 20px;background:var(--navy);color:#fff;border-radius:14px 14px 0 0;display:flex;align-items:center;gap:10px}
-  #tele header b{flex:1}
-  #tele header .rl{font-size:11px;color:#3EC6CC;letter-spacing:.3px}
-  #tele header button{background:transparent;color:#fff;border:0;font-size:22px;line-height:1}
-  #tele .body{flex:1;overflow:auto;padding:14px 18px}
-  #tele table{width:100%;border-collapse:collapse;font-size:12.5px}
-  #tele th{text-align:left;padding:9px 10px;background:#f1f5f9;color:#334155;font-weight:600;position:sticky;top:0;border-bottom:2px solid var(--line)}
-  #tele td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#334155;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
-  #tele td.ts{color:#64748b;white-space:nowrap}
-  #tele .fault td{background:#fef2f2}
-  #tele .foot{padding:10px 18px;background:#f8fafc;border-top:1px solid var(--line);display:flex;align-items:center;font-size:11.5px;color:#64748b;border-radius:0 0 14px 14px}
-  #tele .foot .dot{width:7px;height:7px;background:#15803d;border-radius:50%;margin-right:7px;animation:pulse 1.6s ease-in-out infinite}
+  /* Right column — chart + table */
+  .pageTitle{display:flex;align-items:baseline;gap:14px;margin-bottom:14px}
+  .pageTitle h2{margin:0;font-size:18px;color:var(--navy)}
+  .pageTitle .live{font-size:11px;color:#15803d;display:flex;align-items:center;gap:6px}
+  .pageTitle .live .dot{width:7px;height:7px;background:#15803d;border-radius:50%;animation:pulse 1.6s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .chartCard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+  .chartHdr{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .chartHdr .legend{font-size:11.5px;display:flex;align-items:center;gap:5px;color:#334155}
+  .chartHdr .legend .sw{width:12px;height:3px;border-radius:2px}
+  .chartHdr .val{font-family:ui-monospace,Menlo,monospace;font-weight:600;margin-left:4px}
+  svg.chart{display:block;width:100%;height:220px}
+
+  .tableCard{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .tableCard table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tableCard th{text-align:left;padding:9px 12px;background:#f1f5f9;color:#334155;font-weight:600;position:sticky;top:0;border-bottom:2px solid var(--line)}
+  .tableCard td{padding:7px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+  .tableCard td.ts{color:var(--muted);white-space:nowrap}
+  .tableCard tr.fault td{background:#fef2f2}
+  .tableWrap{max-height:420px;overflow:auto}
+
+  /* Compact modal variant (collapsed slider) */
+  #live:not(.full) .inlineDetail{display:none}
+
+  .empty{padding:30px;text-align:center;color:#94a3b8;font-size:13px}
+  .loading{padding:20px;text-align:center;color:#94a3b8;font-size:12px}
+  .fakeTag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(62,198,204,.15);color:var(--teal);margin-left:6px;letter-spacing:.3px;font-weight:600}
 </style>
 </head>
 <body>
 
-<!-- ================= Access gate ================= -->
 <div id="gate">
   <div class="card">
     <h1>Atosu Engineering</h1>
@@ -103,222 +127,264 @@
   </div>
 </div>
 
-<!-- ================= Top bar ================= -->
 <div class="topbar">
   <div class="brand">Atosu <span>Configurator</span></div>
   <span class="pill" id="connPill">● connecting</span>
   <div class="sep"></div>
-  <button onclick="toggleLive()">📡 Live Devices</button>
-  <button class="primary" onclick="openBuilder()">⚙︎ Open Builder</button>
+  <button onclick="toggleLive()">📡 Devices</button>
+  <button class="primary" onclick="openBuilder()">⚙︎ Builder</button>
 </div>
 
-<!-- ================= Config builder in iframe ================= -->
-<div class="main">
-  <iframe id="bldr" src="builder.html" title="Atosu Builder"></iframe>
-</div>
+<div class="main"><iframe id="bldr" src="builder.html" title="Atosu Builder"></iframe></div>
 
-<!-- ================= Live devices panel ================= -->
 <aside id="live">
   <header>
-    <b>Live Devices · StreamPipes</b>
-    <button onclick="toggleLive()">×</button>
+    <b>Atosu Devices <span class="fakeTag">LIVE</span></b>
+    <button onclick="toggleFull()" title="Expand / collapse" id="expBtn">⛶</button>
+    <button onclick="toggleLive()" title="Close">×</button>
   </header>
-  <div class="toolbar">
-    <button onclick="showForm()">+ Add Device</button>
-    <button class="ghost" onclick="loadDevices()">↻ Refresh</button>
-  </div>
-  <div class="body">
-    <div id="form">
-      <label>Device name</label>
-      <input id="fName" placeholder="e.g. PMP-07 Centrifugal Pump"/>
-      <label>MQTT topic</label>
-      <input id="fTopic" placeholder="e.g. atosu/pmp-07/telemetry"/>
-      <label>Device type</label>
-      <select id="fType">
-        <option value="motor">Motor</option>
-        <option value="pump">Pump</option>
-        <option value="sensor">Generic sensor</option>
-      </select>
-      <div class="btns">
-        <button class="cancel" onclick="hideForm()">Cancel</button>
-        <button class="save" onclick="createDevice()">Create</button>
+
+  <div class="layout">
+    <!-- Left column: toolbar + list -->
+    <div class="leftCol">
+      <div class="toolbar">
+        <button onclick="showForm()">+ Add Device</button>
+        <button class="ghost" onclick="loadDevices()">↻ Refresh</button>
       </div>
-      <div id="formMsg"></div>
+      <div id="form">
+        <label>Device name</label>
+        <input id="fName" placeholder="e.g. TLDD-02 Motor"/>
+        <label>MQTT topic</label>
+        <input id="fTopic" placeholder="e.g. atosu/tldd-02/telemetry"/>
+        <label>Device type</label>
+        <select id="fType">
+          <option value="motor">Motor</option>
+          <option value="pump">Pump</option>
+          <option value="sensor">Generic sensor</option>
+        </select>
+        <div class="help">💡 Quick-fill with a live standby device:</div>
+        <div class="chips">
+          <span class="chip" onclick="fill('TLDD-02 Motor','atosu/tldd-02/telemetry','motor')">TLDD-02 Motor</span>
+          <span class="chip" onclick="fill('PMP-07 Pump','atosu/pmp-07/telemetry','pump')">PMP-07 Pump</span>
+        </div>
+        <div class="btns">
+          <button class="cancel" onclick="hideForm()">Cancel</button>
+          <button class="save" onclick="createDevice()">Create</button>
+        </div>
+        <div id="formMsg"></div>
+      </div>
+      <div id="devList" style="padding:4px 2px">Loading…</div>
     </div>
-    <div id="devList">Loading devices…</div>
+
+    <!-- Right column: chart + table (full-screen only) -->
+    <div class="rightCol" id="rightCol">
+      <div class="pageTitle">
+        <h2 id="detailTitle">Pick a device on the left</h2>
+        <span class="live" id="liveTag" style="display:none"><span class="dot"></span>live · auto-refresh 2s</span>
+      </div>
+      <div id="detailBody" class="empty">Click a device to see its live telemetry chart and table.</div>
+    </div>
   </div>
 </aside>
 
-<!-- ================= Live telemetry modal ================= -->
-<div id="tele">
-  <div class="box">
-    <header>
-      <b id="teleTitle">—</b>
-      <span class="rl">LIVE · auto-refresh 2s</span>
-      <button onclick="closeTele()">×</button>
+<!-- Compact modal when slider is NOT full-screen -->
+<div id="tele" style="position:fixed;inset:0;background:rgba(2,10,30,.55);display:none;align-items:center;justify-content:center;z-index:300">
+  <div style="background:#fff;border-radius:14px;max-width:780px;width:92%;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <header style="padding:14px 20px;background:var(--navy);color:#fff;border-radius:14px 14px 0 0;display:flex;align-items:center;gap:10px">
+      <b id="mTitle" style="flex:1">—</b>
+      <span style="font-size:11px;color:var(--cyan)">LIVE · auto-refresh 2s</span>
+      <button onclick="closeTele()" style="background:transparent;color:#fff;border:0;font-size:22px">×</button>
     </header>
-    <div class="body">
-      <table>
-        <thead><tr id="teleHead"></tr></thead>
-        <tbody id="teleBody"></tbody>
-      </table>
+    <div style="padding:14px 18px;overflow:auto">
+      <div class="chartCard"><div class="chartHdr" id="mLegend"></div><svg class="chart" id="mSvg" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
+      <div class="tableCard"><div class="tableWrap"><table><thead><tr id="mHead"></tr></thead><tbody id="mBody"></tbody></table></div></div>
     </div>
-    <div class="foot"><span class="dot"></span><span id="teleFoot">Streaming from Atosu StreamPipes data lake</span></div>
   </div>
 </div>
 
 <script>
-/* ================= Config ================= */
-const ACCESS_CODE = 'atosu';
-const SP = '/sp/streampipes-backend/api';
-const CREDS = {username:'admin@atosu.com', password:'Atosu-VCAg5tYtyI'};
-let TOKEN = sessionStorage.getItem('sp-token') || '';
-let telePoll = null;
+/* ============ Config ============ */
+const ACCESS_CODE='atosu', SP='/sp/streampipes-backend/api';
+const CREDS={username:'admin@atosu.com',password:'Atosu-VCAg5tYtyI'};
+let TOKEN=sessionStorage.getItem('sp-token')||'', poll=null, selected=null;
 
-/* ================= Access gate ================= */
+/* ============ Access gate ============ */
 function checkCode(){
-  const v = (document.getElementById('code').value||'').trim().toLowerCase();
-  if (v !== ACCESS_CODE){ document.getElementById('gateErr').textContent='Invalid code.'; return; }
-  sessionStorage.setItem('atosu-access','1');
-  document.getElementById('gate').style.display='none';
-  init();
+  if(((document.getElementById('code').value||'').trim().toLowerCase())!==ACCESS_CODE){document.getElementById('gateErr').textContent='Invalid code.';return;}
+  sessionStorage.setItem('atosu-access','1');document.getElementById('gate').style.display='none';init();
 }
-document.getElementById('code').addEventListener('keydown', e=>{ if(e.key==='Enter') checkCode(); });
-if (sessionStorage.getItem('atosu-access')==='1'){ document.getElementById('gate').style.display='none'; setTimeout(init,10); }
+document.getElementById('code').addEventListener('keydown',e=>{if(e.key==='Enter')checkCode();});
+if(sessionStorage.getItem('atosu-access')==='1'){document.getElementById('gate').style.display='none';setTimeout(init,10);}
 
-/* ================= StreamPipes login ================= */
+/* ============ API ============ */
 async function login(){
-  try{
-    const r = await fetch(SP+'/v2/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(CREDS)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const j = await r.json();
-    TOKEN = j.accessToken;
-    sessionStorage.setItem('sp-token', TOKEN);
-    pill('● connected','#3EC6CC');
-    return true;
-  }catch(e){ pill('● offline','#f87171'); return false; }
+  try{const r=await fetch(SP+'/v2/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(CREDS)});
+    if(!r.ok)throw 0;const j=await r.json();TOKEN=j.accessToken;sessionStorage.setItem('sp-token',TOKEN);pill('● connected',getComputedStyle(document.documentElement).getPropertyValue('--cyan').trim()||'#3EC6CC');return true;
+  }catch(e){pill('● offline','#f87171');return false;}
 }
-function pill(txt,color){ const p=document.getElementById('connPill'); p.textContent=txt; p.style.color=color; p.style.borderColor=color; p.style.background='transparent'; }
+function pill(t,c){const p=document.getElementById('connPill');p.textContent=t;p.style.color=c;p.style.borderColor=c;}
 async function spGet(path){
-  const r = await fetch(SP+path, {headers:{Authorization:'Bearer '+TOKEN}});
-  if (r.status===401){ await login(); return spGet(path); }
+  const r=await fetch(SP+path,{headers:{Authorization:'Bearer '+TOKEN}});
+  if(r.status===401){await login();return spGet(path);}
   return r.json();
 }
-async function spPost(path, body){
-  const r = await fetch(SP+path, {method:'POST',headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if (r.status===401){ await login(); return spPost(path,body); }
-  return {status:r.status, body: await r.text()};
+async function spPost(path,body){
+  const r=await fetch(SP+path,{method:'POST',headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(r.status===401){await login();return spPost(path,body);}
+  return {status:r.status,body:await r.text()};
 }
 
-/* ================= Devices list ================= */
+/* ============ Devices ============ */
 async function loadDevices(){
-  const list = document.getElementById('devList');
-  list.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">Loading…</div>';
+  const list=document.getElementById('devList');list.innerHTML='<div class="loading">Loading…</div>';
   try{
-    const adapters = await spGet('/v2/connect/master/adapters');
-    if (!Array.isArray(adapters) || adapters.length===0){
-      list.innerHTML = '<div style="padding:30px;text-align:center;color:#94a3b8;font-size:13px">No devices yet.<br/>Click <b>+ Add Device</b> to create one.</div>';
-      return;
-    }
-    list.innerHTML = adapters.map(a => {
-      const name = a.name || 'Unnamed';
-      const running = a.running === true || a.selectedEndpointUrl != null;
-      const type = (a.name||'').toLowerCase().includes('pump') ? '💧 Pump' : '⚙︎ Motor/Device';
-      const measure = a.dataLakeMeasureName || a.correspondingDataStreamElementId || '';
-      return `<div class="dev" onclick="openTele('${(a.elementId||'').replace(/'/g,"\\'")}','${name.replace(/'/g,"\\'")}')">
-        <div class="row">
-          <div class="name">${name}</div>
-          <span class="badge ${running?'on':'off'}">${running?'RUNNING':'STOPPED'}</span>
-        </div>
-        <div class="meta">${type} · ${a.adapterType||'MQTT'} ${measure?'· '+measure:''}</div>
-      </div>`;
+    const ad=await spGet('/v2/connect/master/adapters');
+    if(!Array.isArray(ad)||!ad.length){list.innerHTML='<div class="empty">No devices yet.<br/>Click <b>+ Add Device</b> to create one.</div>';return;}
+    list.innerHTML=ad.map(a=>{
+      const n=a.name||'Unnamed',run=a.running===true||!!a.selectedEndpointUrl,
+            typ=(n+'').toLowerCase().includes('pump')?'💧 Pump':'⚙︎ Motor/Device',
+            m=a.dataLakeMeasureName||a.correspondingDataStreamElementId||'';
+      return `<div class="dev ${selected===a.elementId?'sel':''}" data-id="${a.elementId}" data-name="${n.replace(/"/g,'&quot;')}" onclick="pick(this)">
+        <div class="row"><div class="name">${n}</div><span class="badge ${run?'on':'off'}">${run?'RUNNING':'STOPPED'}</span></div>
+        <div class="meta">${typ} · MQTT ${m?'· '+m:''}</div></div>`;
     }).join('');
-  }catch(e){
-    list.innerHTML = `<div style="padding:20px;text-align:center;color:#991b1b;font-size:12px">Could not load: ${e.message}</div>`;
-  }
+  }catch(e){list.innerHTML=`<div class="empty" style="color:#991b1b">Could not load: ${e.message}</div>`;}
+}
+function pick(el){
+  document.querySelectorAll('.dev').forEach(d=>d.classList.remove('sel'));el.classList.add('sel');
+  const id=el.dataset.id,name=el.dataset.name;selected=id;
+  if(document.getElementById('live').classList.contains('full')){openInline(id,name);}else{openModal(id,name);}
 }
 
-/* ================= Add device ================= */
-function showForm(){ document.getElementById('form').classList.add('open'); document.getElementById('formMsg').textContent=''; }
-function hideForm(){ document.getElementById('form').classList.remove('open'); ['fName','fTopic'].forEach(id=>document.getElementById(id).value=''); }
-
+/* ============ Add device ============ */
+function showForm(){document.getElementById('form').classList.add('open');document.getElementById('formMsg').textContent='';}
+function hideForm(){document.getElementById('form').classList.remove('open');['fName','fTopic'].forEach(id=>document.getElementById(id).value='');}
+function fill(name,topic,type){document.getElementById('fName').value=name;document.getElementById('fTopic').value=topic;document.getElementById('fType').value=type;}
 async function createDevice(){
-  const name = (document.getElementById('fName').value||'').trim();
-  const topic = (document.getElementById('fTopic').value||'').trim();
-  const type = document.getElementById('fType').value;
-  const msg = document.getElementById('formMsg'); msg.className=''; msg.textContent='';
-  if (!name || !topic){ msg.className='err'; msg.textContent='Name and topic required.'; return; }
-  msg.textContent = 'Creating adapter on StreamPipes…';
-
-  // Fetch an existing adapter as template, mutate it. (Keeps us tolerant of version changes.)
+  const name=(document.getElementById('fName').value||'').trim(),topic=(document.getElementById('fTopic').value||'').trim(),type=document.getElementById('fType').value;
+  const msg=document.getElementById('formMsg');msg.className='';msg.textContent='';
+  if(!name||!topic){msg.className='err';msg.textContent='Name and topic required.';return;}
+  msg.textContent='Creating…';
   try{
-    const existing = await spGet('/v2/connect/master/adapters');
-    const tmpl = existing && existing[0];
-    if (!tmpl){ msg.className='err'; msg.textContent='Needs at least one adapter in StreamPipes as template. Create one via Connect first.'; return; }
-    // Deep-clone + strip identity + update name/topic
-    const dup = JSON.parse(JSON.stringify(tmpl));
-    delete dup.elementId; delete dup.rev; delete dup._rev; delete dup._id;
-    dup.name = name;
-    dup.description = `${type} device · created via Atosu Configurator`;
-    // Patch topic in the config (MQTT adapter stores it in config.values[?].value)
-    const cfgStr = JSON.stringify(dup);
-    const patched = cfgStr.replace(/"atosu\/[^"]+"/g, `"${topic}"`);
-    const body = JSON.parse(patched);
-    const res = await spPost('/v2/connect/master/adapter', body);
-    if (res.status>=200 && res.status<300){
-      msg.textContent = '✓ Device created in StreamPipes';
-      setTimeout(()=>{ hideForm(); loadDevices(); }, 900);
-    } else {
-      msg.className='err'; msg.textContent = `Server said HTTP ${res.status}. Try creating via StreamPipes Connect UI for complex adapters.`;
-    }
-  }catch(e){ msg.className='err'; msg.textContent='Error: '+e.message; }
+    const ex=await spGet('/v2/connect/master/adapters');const t=ex&&ex[0];
+    if(!t){msg.className='err';msg.textContent='Need an initial template adapter.';return;}
+    const d=JSON.parse(JSON.stringify(t));
+    delete d.elementId;delete d.rev;delete d._rev;delete d._id;delete d.dataLakeMeasureName;
+    d.name=name;d.description=`${type} device · created via Atosu Configurator`;
+    const patched=JSON.parse(JSON.stringify(d).replace(/"atosu\/[^"]+"/g,`"${topic}"`));
+    const res=await spPost('/v2/connect/master/adapter',patched);
+    if(res.status>=200&&res.status<300){msg.textContent='✓ Device created';setTimeout(()=>{hideForm();loadDevices();},900);}
+    else{msg.className='err';msg.textContent=`HTTP ${res.status}. Try creating via builder for complex adapters.`;}
+  }catch(e){msg.className='err';msg.textContent='Error: '+e.message;}
 }
 
-/* ================= Live telemetry ================= */
-async function openTele(adapterId, name){
-  document.getElementById('teleTitle').textContent = name;
-  document.getElementById('teleHead').innerHTML = '<th>Timestamp</th><th>Loading…</th>';
-  document.getElementById('teleBody').innerHTML = '';
-  document.getElementById('tele').classList.add('open');
-  // Find the measurement name for this adapter
-  const adapters = await spGet('/v2/connect/master/adapters');
-  const a = adapters.find(x => x.elementId === adapterId);
-  const measure = a?.dataLakeMeasureName || a?.name;
-  if (!measure){ document.getElementById('teleFoot').textContent='No data lake measurement for this device.'; return; }
-  pollTele(measure);
-  telePoll = setInterval(()=>pollTele(measure), 2000);
-}
-function closeTele(){ document.getElementById('tele').classList.remove('open'); if(telePoll){clearInterval(telePoll); telePoll=null;} }
-
-async function pollTele(measure){
-  try{
-    // Measurement name may contain spaces — encode
-    const path = `/v4/datalake/measurements/${encodeURIComponent(measure)}?limit=20&order=DESC`;
-    const data = await spGet(path);
-    const rows = (data?.allDataSeries?.[0]?.rows) || data?.rows || [];
-    const hdrs = (data?.allDataSeries?.[0]?.headers) || data?.headers || [];
-    if (!rows.length){ document.getElementById('teleBody').innerHTML='<tr><td colspan="99" style="text-align:center;color:#94a3b8">waiting for data…</td></tr>'; return; }
-    document.getElementById('teleHead').innerHTML = hdrs.map((h,i)=>`<th>${i===0?'Time':h}</th>`).join('');
-    document.getElementById('teleBody').innerHTML = rows.map(r=>{
-      const faulty = r.some(v=>String(v).toUpperCase().includes('FAULT')||String(v).toUpperCase().includes('CAVIT'));
-      return `<tr class="${faulty?'fault':''}">`+r.map((v,i)=>{
-        if (i===0){ try{ return `<td class="ts">${new Date(v).toLocaleTimeString()}</td>`; }catch(_){return `<td class="ts">${v}</td>`;} }
-        return `<td>${typeof v==='number'? v.toFixed(2) : v}</td>`;
-      }).join('')+'</tr>';
-    }).join('');
-    document.getElementById('teleFoot').textContent = `${rows.length} rows · measurement: ${measure}`;
-  }catch(e){ document.getElementById('teleFoot').textContent='Error: '+e.message; }
+/* ============ Full-screen / slider toggle ============ */
+function toggleLive(){const el=document.getElementById('live');el.classList.toggle('open');if(el.classList.contains('open'))loadDevices();}
+function toggleFull(){
+  const el=document.getElementById('live');el.classList.toggle('full');
+  document.getElementById('expBtn').textContent=el.classList.contains('full')?'⇤':'⛶';
+  if(!el.classList.contains('full')){clearInterval(poll);poll=null;}
+  else if(selected){const d=document.querySelector('.dev.sel');if(d)openInline(d.dataset.id,d.dataset.name);}
 }
 
-/* ================= UI helpers ================= */
-function toggleLive(){ document.getElementById('live').classList.toggle('open'); if(document.getElementById('live').classList.contains('open')) loadDevices(); }
-function openBuilder(){ document.getElementById('bldr').contentWindow.focus(); }
-
-async function init(){
-  pill('● connecting','#fbbf24');
-  const ok = await login();
-  if (ok) loadDevices();
+/* ============ Telemetry render ============ */
+async function fetchData(id){
+  const ad=await spGet('/v2/connect/master/adapters');
+  const a=ad.find(x=>x.elementId===id);const m=a?.dataLakeMeasureName||a?.name;
+  if(!m)return null;
+  const d=await spGet(`/v4/datalake/measurements/${encodeURIComponent(m)}?limit=40&order=DESC`);
+  return {measure:m,series:d?.allDataSeries?.[0],headers:d?.headers||d?.allDataSeries?.[0]?.headers||[]};
 }
+
+function pickNumericFields(headers,rows){
+  // find two numeric fields (prefer temperature, vibration, flow)
+  const skip=new Set(['time','deviceId','machine_state','pump_state']);
+  const cand=headers.map((h,i)=>({h,i})).filter(x=>!skip.has(x.h));
+  const score=(h)=>{const s=h.toLowerCase();if(s.includes('temp'))return 10;if(s.includes('vib'))return 9;if(s.includes('flow'))return 8;if(s.includes('current'))return 7;if(s.includes('pres'))return 6;return 1;};
+  cand.sort((a,b)=>score(b.h)-score(a.h));
+  return cand.slice(0,2);
+}
+function drawChart(svgEl,legendEl,rows,headers,fields){
+  if(!rows||!rows.length){svgEl.innerHTML='';legendEl.innerHTML='<span style="color:#94a3b8;font-size:11.5px">no data</span>';return;}
+  const asc=[...rows].reverse(); // oldest -> newest
+  const W=600,H=220,PAD={l:36,r:12,t:14,b:22};
+  const n=asc.length;
+  const colors=['#9C2815','#0B7F84'];
+  let out=`<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>`;
+  // grid
+  for(let i=0;i<=4;i++){const y=PAD.t+((H-PAD.t-PAD.b)*i/4);out+=`<line x1="${PAD.l}" x2="${W-PAD.r}" y1="${y}" y2="${y}" stroke="#eef2f6"/>`;}
+  const legendHtml=[];
+  fields.forEach((f,fi)=>{
+    const vals=asc.map(r=>Number(r[f.i])).filter(v=>!isNaN(v));
+    if(!vals.length)return;
+    const mn=Math.min(...vals),mx=Math.max(...vals);const rng=(mx-mn)||1;
+    const pts=asc.map((r,i)=>{const v=Number(r[f.i]);if(isNaN(v))return null;
+      const x=PAD.l+(W-PAD.l-PAD.r)*(n<2?0:i/(n-1));
+      const y=PAD.t+(H-PAD.t-PAD.b)*(1-(v-mn)/rng);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;}).filter(Boolean).join(' ');
+    out+=`<polyline fill="none" stroke="${colors[fi]}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts}"/>`;
+    // y-axis labels
+    out+=`<text x="4" y="${PAD.t+6+fi*12}" font-size="10" fill="${colors[fi]}" font-weight="600">${mx.toFixed(1)}</text>`;
+    out+=`<text x="4" y="${H-PAD.b+fi*12-2}" font-size="10" fill="${colors[fi]}" font-weight="600">${mn.toFixed(1)}</text>`;
+    const last=vals[vals.length-1];
+    legendHtml.push(`<span class="legend"><span class="sw" style="background:${colors[fi]}"></span>${f.h}<span class="val">${last.toFixed(2)}</span></span>`);
+  });
+  // x-axis timestamps (first & last)
+  try{const t0=new Date(asc[0][0]).toLocaleTimeString(),tN=new Date(asc[asc.length-1][0]).toLocaleTimeString();
+    out+=`<text x="${PAD.l}" y="${H-6}" font-size="10" fill="#94a3b8">${t0}</text>`;
+    out+=`<text x="${W-PAD.r}" y="${H-6}" font-size="10" fill="#94a3b8" text-anchor="end">${tN}</text>`;}catch(_){}
+  svgEl.innerHTML=out;
+  legendEl.innerHTML=legendHtml.join(' &nbsp; ');
+}
+function renderTable(headers,rows,headEl,bodyEl){
+  if(!rows||!rows.length){bodyEl.innerHTML='<tr><td colspan="99" style="text-align:center;color:#94a3b8">waiting…</td></tr>';return;}
+  headEl.innerHTML=headers.map((h,i)=>`<th>${i===0?'Time':h}</th>`).join('');
+  bodyEl.innerHTML=rows.map(r=>{
+    const f=r.some(v=>String(v).toUpperCase().includes('FAULT')||String(v).toUpperCase().includes('CAVIT'));
+    return `<tr class="${f?'fault':''}">`+r.map((v,i)=>{
+      if(i===0){try{return `<td class="ts">${new Date(v).toLocaleTimeString()}</td>`;}catch(_){return `<td class="ts">${v}</td>`;}}
+      return `<td>${typeof v==='number'?v.toFixed(2):v}</td>`;
+    }).join('')+'</tr>';
+  }).join('');
+}
+
+/* ============ Inline (full-screen) ============ */
+async function openInline(id,name){
+  if(poll){clearInterval(poll);poll=null;}
+  document.getElementById('detailTitle').textContent=name;
+  document.getElementById('liveTag').style.display='flex';
+  document.getElementById('detailBody').innerHTML=`
+    <div class="chartCard"><div class="chartHdr" id="iLegend"></div><svg class="chart" id="iSvg" viewBox="0 0 600 220" preserveAspectRatio="none"></svg></div>
+    <div class="tableCard"><div class="tableWrap"><table><thead><tr id="iHead"></tr></thead><tbody id="iBody"></tbody></table></div></div>`;
+  const update=async()=>{
+    const d=await fetchData(id);if(!d||!d.series){document.getElementById('iBody').innerHTML='<tr><td style="text-align:center;color:#94a3b8;padding:20px">no data lake measurement</td></tr>';return;}
+    const rows=d.series.rows,hdrs=d.series.headers||d.headers;
+    const fs=pickNumericFields(hdrs,rows);
+    drawChart(document.getElementById('iSvg'),document.getElementById('iLegend'),rows,hdrs,fs);
+    renderTable(hdrs,rows,document.getElementById('iHead'),document.getElementById('iBody'));
+  };
+  await update();poll=setInterval(update,2000);
+}
+
+/* ============ Modal (compact) ============ */
+async function openModal(id,name){
+  if(poll){clearInterval(poll);poll=null;}
+  document.getElementById('mTitle').textContent=name;
+  document.getElementById('mHead').innerHTML='<th>loading…</th>';document.getElementById('mBody').innerHTML='';
+  document.getElementById('tele').style.display='flex';
+  const update=async()=>{
+    const d=await fetchData(id);if(!d||!d.series){document.getElementById('mBody').innerHTML='<tr><td style="text-align:center;color:#94a3b8;padding:20px">no data</td></tr>';return;}
+    const rows=d.series.rows,hdrs=d.series.headers||d.headers;
+    const fs=pickNumericFields(hdrs,rows);
+    drawChart(document.getElementById('mSvg'),document.getElementById('mLegend'),rows,hdrs,fs);
+    renderTable(hdrs,rows,document.getElementById('mHead'),document.getElementById('mBody'));
+  };
+  await update();poll=setInterval(update,2000);
+}
+function closeTele(){document.getElementById('tele').style.display='none';if(poll){clearInterval(poll);poll=null;}}
+
+function openBuilder(){document.getElementById('bldr').contentWindow.focus();}
+async function init(){pill('● connecting','#fbbf24');const ok=await login();if(ok)loadDevices();}
 </script>
 </body>
 </html>
