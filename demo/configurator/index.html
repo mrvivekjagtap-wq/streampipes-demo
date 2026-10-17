@@ -272,7 +272,7 @@ async function createDevice(){
     delete d.elementId;delete d.rev;delete d._rev;delete d._id;delete d.dataLakeMeasureName;
     d.name=name;d.description=`${type} device · created via Atosu Configurator`;
     const patched=JSON.parse(JSON.stringify(d).replace(/"atosu\/[^"]+"/g,`"${topic}"`));
-    const res=await spPost('/v2/connect/master/adapter',patched);
+    const res=await spPost('/v2/connect/master/adapters',patched);
     if(res.status>=200&&res.status<300){msg.textContent='✓ Device created';setTimeout(()=>{hideForm();loadDevices();},900);}
     else{msg.className='err';msg.textContent=`HTTP ${res.status}. Try creating via builder for complex adapters.`;}
   }catch(e){msg.className='err';msg.textContent='Error: '+e.message;}
