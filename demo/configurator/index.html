@@ -293,7 +293,7 @@ function closeTele(){ document.getElementById('tele').classList.remove('open'); 
 async function pollTele(measure){
   try{
     // Measurement name may contain spaces — encode
-    const path = `/v4/datalake/measurements/${encodeURIComponent(measure)}?orderBy=time&maxResults=20&order=DESC`;
+    const path = `/v4/datalake/measurements/${encodeURIComponent(measure)}?limit=20&order=DESC`;
     const data = await spGet(path);
     const rows = (data?.allDataSeries?.[0]?.rows) || data?.rows || [];
     const hdrs = (data?.allDataSeries?.[0]?.headers) || data?.headers || [];
